@@ -1,0 +1,12 @@
+encyclopedia/__pycache__/__init__.cpython-38.pyc
+encyclopedia/__pycache__/admin.cpython-38.pyc
+encyclopedia/__pycache__/forms.cpython-38.pyc
+encyclopedia/__pycache__/models.cpython-38.pyc
+encyclopedia/__pycache__/urls.cpython-38.pyc
+encyclopedia/__pycache__/util.cpython-38.pyc
+encyclopedia/__pycache__/views.cpython-38.pyc
+encyclopedia/migrations/__pycache__/__init__.cpython-38.pyc
+wiki/__pycache__/__init__.cpython-38.pyc
+wiki/__pycache__/settings.cpython-38.pyc
+wiki/__pycache__/urls.cpython-38.pyc
+wiki/__pycache__/wsgi.cpython-38.pyc
