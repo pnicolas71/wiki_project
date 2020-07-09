@@ -2,14 +2,29 @@ from django.shortcuts import render
 
 from django import forms
 
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
+
+from django.urls import reverse
 
 from . import util
 
+import random
+
+import markdown2
+
 
 class CreateEntryForm(forms.Form):
-    title = forms.CharField(
-        widget=forms.TextInput(attrs={'placeholder': 'Enter a title'}))
+    title = forms.CharField(widget=forms.TextInput(
+        attrs={'placeholder': 'Enter a title'}))
+    content = forms.CharField(widget=forms.Textarea(
+        attrs={"placeholder": "Enter a Entry details", "rows": 20, "cols": 90}))
+
+
+class EditEntryForm(forms.Form):
+    edit_title = forms.CharField(widget=forms.TextInput(
+        attrs={'placeholder': 'Enter a title'}))
+    edit_content = forms.CharField(widget=forms.Textarea(
+        attrs={"placeholder": "Enter a Entry details", "rows": 20, "cols": 90}))
 
 
 def index(request):
@@ -24,19 +39,74 @@ def entry_list(request):
 
 def show_entry(request, name):
     entry = util.get_entry(name)
-    if entry is None:
+    if not entry:
         error_message = "the requested Entry was not found"
+        return render(request, "encyclopedia/show_entry.html", {
+            "error_message": error_message,
+        })
     else:
-        error_message = ''
-    return render(request, "encyclopedia/show_entry_view.html", {
-        "name": name,
-        "entry": entry,
-        "error_message": error_message,
+        return render(request, "encyclopedia/show_entry.html", {
+            "name": name,
+            "entry": markdown2.markdown(entry),
+        })
+
+
+def edit_entry(request, name):
+    if request.method == "POST":
+        form = EditEntryForm(request.POST)
+        if form.is_valid():
+            entry_title = form.cleaned_data["edit_title"]
+            entry_content = form.cleaned_data["edit_content"]
+            util.save_entry(entry_title, '# ' +
+                            entry_title + "\n \n"+entry_content)
+            return render(request, "encyclopedia/show_entry.html", {
+                "name": entry_title,
+                "entry": markdown2.markdown(entry_content),
+            })
+    else:
+        entry = util.get_entry(name)
+        form = EditEntryForm(
+            initial={'edit_title': name, 'edit_content': entry})
+        return render(request, "encyclopedia/edit_entry.html", {
+            "form": form,
+            "name": name,
+            "entry": entry,
+        })
+
+
+def create_entry(request):
+    if request.method == "POST":
+        form = CreateEntryForm(request.POST)
+        if form.is_valid():
+            entry_title = form.cleaned_data["title"]
+            entry_content = form.cleaned_data["content"]
+            entries = util.list_entries()
+            check = False
+            for entry in entries:
+                if entry_title.lower() == entry.lower():
+                    title = entry
+                    check = True
+                    error_message = "This entry already exists"
+                    return render(request, "encyclopedia/show_entry.html", {
+                        "error_message": error_message,
+                        "entry": entry,
+                    })
+            if not check:
+                util.save_entry(entry_title, '# ' +
+                                entry_title + "\n \n"+entry_content)
+                return HttpResponseRedirect('wiki/'+entry_title)
+        else:
+            return render(request, "encyclopedia/create_entry.html", {
+                "form": form
+            })
+    return render(request, "encyclopedia/create_entry.html", {
+        "form": CreateEntryForm()
     })
 
 
 def search_entry(request):
     if request.method == "POST":
+        data = request.POST.copy()
         search = request.POST.get('q')
         founds = []
         found = ''
@@ -47,20 +117,27 @@ def search_entry(request):
             if search.lower() in page.lower():
                 founds.append(page)
 
-        if not found:
+        if found:
+            entry = util.get_entry(found)
+            return HttpResponseRedirect('wiki/'+search)
+            # return render(request, "encyclopedia/show_entry.html", {
+            #     "name": search,
+            #     "entry": markdown2.markdown(entry),
+            # })
+        elif len(founds):
             return render(request, "encyclopedia/index.html", {
                 "entries": founds
             })
         else:
-            entry = util.get_entry(found)
-            return render(request, "encyclopedia/show_entry_view.html", {
-                "name": search,
-                "entry": entry,
+            return render(request, "encyclopedia/show_entry.html", {
+                "error_message": "the requested Entry was not found",
             })
-
     else:
         return render(request, "encyclopedia/index.html")
 
 
-def random_page(request):
-    return HttpResponse('<h1>This is the ramdom page</h1>')
+def show_random(request):
+    liste = util.list_entries()
+    rand = random.choice(liste)
+    entry = util.get_entry(rand)
+    return HttpResponseRedirect('wiki/'+rand)

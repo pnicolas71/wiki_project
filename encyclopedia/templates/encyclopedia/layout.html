@@ -25,10 +25,10 @@
                 <a href="{% url 'index' %}">Home</a>
             </div>
             <div>
-                <a href="{% url 'index' %}">Create New Page</a>
+                <a href="{% url 'create_entry' %}">Create New Page</a>
             </div>
             <div>
-                <a href="{% url 'index' %}">Random Page</a>
+                <a href="{% url 'show_random' %}">Random Page</a>
             </div>
             {% block nav %}
             {% endblock %}
@@ -42,6 +42,10 @@
 
             {% block body %}
             {% endblock %}
+
+            {% block edit_button %}
+            {% endblock %}
+
         </div>
     </div>
 

@@ -11,7 +11,7 @@
 
 {% block title %}
 {% if not error_message %}
-{{name}}
+{{name|safe}}
 {% else %}
 ERROR
 {% endif %}
@@ -19,6 +19,10 @@ ERROR
 
 {% block body %}
 {% if not error_message %}
-{{ entry }}
+{{ entry|safe }}
 {% endif %}
 {% endblock body %}
+
+<!-- {% block edit_button %}
+<a href="{% url 'edit_entry' name %}">edit entry</a>
+{% endblock edit_button %} -->
