@@ -4,7 +4,7 @@
 
 **Hope sincerely it works**
 
-~~If not just wipe it~~
+~~If not just wipe it~~ why isn't this strikes??
 
 1. I think it's enough
 - I have to go sleep
