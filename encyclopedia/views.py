@@ -14,16 +14,16 @@ import markdown2
 
 
 class CreateEntryForm(forms.Form):
-    title = forms.CharField(widget=forms.TextInput(
+    title = forms.CharField(label="Entry Title", widget=forms.TextInput(
         attrs={'placeholder': 'Enter a title'}))
-    content = forms.CharField(widget=forms.Textarea(
+    content = forms.CharField(label="Entry Details", widget=forms.Textarea(
         attrs={"placeholder": "Enter a Entry details", "rows": 20, "cols": 90}))
 
 
 class EditEntryForm(forms.Form):
-    edit_title = forms.CharField(widget=forms.TextInput(
+    edit_title = forms.CharField(label="Entry Title", widget=forms.TextInput(
         attrs={'placeholder': 'Enter a title'}))
-    edit_content = forms.CharField(widget=forms.Textarea(
+    edit_content = forms.CharField(label="Entry Details", widget=forms.Textarea(
         attrs={"placeholder": "Enter a Entry details", "rows": 20, "cols": 90}))
 
 
@@ -39,10 +39,11 @@ def entry_list(request):
 
 def show_entry(request, name):
     entry = util.get_entry(name)
-    if not entry:
-        error_message = "the requested Entry was not found"
-        return render(request, "encyclopedia/show_entry.html", {
-            "error_message": error_message,
+
+    if entry == None:
+        error_message = "The requested Entry was not found"
+        return render(request, "encyclopedia/error.html", {
+            "error_message": error_message
         })
     else:
         return render(request, "encyclopedia/show_entry.html", {
@@ -57,21 +58,26 @@ def edit_entry(request, name):
         if form.is_valid():
             entry_title = form.cleaned_data["edit_title"]
             entry_content = form.cleaned_data["edit_content"]
-            util.save_entry(entry_title, '# ' +
-                            entry_title + "\n \n"+entry_content)
+            util.save_entry(entry_title, entry_content)
             return render(request, "encyclopedia/show_entry.html", {
                 "name": entry_title,
                 "entry": markdown2.markdown(entry_content),
             })
     else:
         entry = util.get_entry(name)
-        form = EditEntryForm(
-            initial={'edit_title': name, 'edit_content': entry})
-        return render(request, "encyclopedia/edit_entry.html", {
-            "form": form,
-            "name": name,
-            "entry": entry,
-        })
+        if entry == None:
+            error_message = "This Entry doesn't exist and can't be edited"
+            return render(request, "encyclopedia/error.html", {
+                "error_message": error_message
+            })
+        else:
+            form = EditEntryForm(
+                initial={'edit_title': name, 'edit_content': entry})
+            return render(request, "encyclopedia/edit_entry.html", {
+                "form": form,
+                "name": name,
+                "entry": entry,
+            })
 
 
 def create_entry(request):
@@ -87,9 +93,8 @@ def create_entry(request):
                     title = entry
                     check = True
                     error_message = "This entry already exists"
-                    return render(request, "encyclopedia/show_entry.html", {
+                    return render(request, "encyclopedia/error.html", {
                         "error_message": error_message,
-                        "entry": entry,
                     })
             if not check:
                 util.save_entry(entry_title, '# ' +
@@ -129,8 +134,9 @@ def search_entry(request):
                 "entries": founds
             })
         else:
-            return render(request, "encyclopedia/show_entry.html", {
-                "error_message": "the requested Entry was not found",
+            error_message = "The requested Entry or any Entry that contains this string were not found"
+            return render(request, "encyclopedia/error.html", {
+                "error_message": error_message,
             })
     else:
         return render(request, "encyclopedia/index.html")

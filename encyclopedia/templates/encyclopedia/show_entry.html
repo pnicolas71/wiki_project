@@ -1,26 +1,11 @@
 {% extends "encyclopedia/layout.html" %}
 
-{% block message %}
-{% if error_message %}
-<div class="alert alert-danger">
-    <strong>Error:</strong> {{ error_message }}
-</div>
-{% endif %}
-{% endblock message %}
-
-
 {% block title %}
-{% if not error_message %}
 {{name|safe}}
-{% else %}
-ERROR
-{% endif %}
 {% endblock title %}
 
 {% block body %}
-{% if not error_message %}
 {{ entry|safe }}
-{% endif %}
 {% endblock body %}
 
 <!-- {% block edit_button %}
